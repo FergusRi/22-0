@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "homepage": "https://YOUR_GITHUB_USERNAME.github.io/world-cup-draft",
+  "homepage": "https://FergusRi.github.io/world-cup-draft",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
