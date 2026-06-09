@@ -1,0 +1,80 @@
+{
+  "1998": [
+    ["GK", "Dražen Ladić", 82],
+    ["DEF", "Mario Stanić", 79],
+    ["DEF", "Igor Štimac", 83],
+    ["DEF", "Slaven Bilić", 82],
+    ["DEF", "Robert Jarni", 81],
+    ["MID", "Zvonimir Soldo", 81],
+    ["MID", "Aljoša Asanović", 84],
+    ["MID", "Robert Prosinečki", 87],
+    ["MID", "Zvonimir Boban", 86],
+    ["FWD", "Davor Šuker", 88],
+    ["FWD", "Goran Vlaović", 82]
+  ],
+  "2002": [
+    ["GK", "Dražen Ladić", 80],
+    ["DEF", "Dario Šimić", 81],
+    ["DEF", "Robert Jarni", 79],
+    ["DEF", "Slaven Bilić", 80],
+    ["DEF", "Mario Stanić", 78],
+    ["MID", "Niko Kovač", 82],
+    ["MID", "Robert Kovač", 81],
+    ["MID", "Robert Prosinečki", 84],
+    ["MID", "Milan Rapaić", 79],
+    ["FWD", "Davor Šuker", 83],
+    ["FWD", "Iván Klasnić", 80]
+  ],
+  "2006": [
+    ["GK", "Stipe Pletikosa", 81],
+    ["DEF", "Dario Šimić", 82],
+    ["DEF", "Robert Kovač", 82],
+    ["DEF", "Darijo Srna", 83],
+    ["DEF", "Josip Šimunić", 80],
+    ["MID", "Niko Kovač", 83],
+    ["MID", "Luka Modrić", 80],
+    ["MID", "Niko Kranjčar", 82],
+    ["MID", "Igor Tudor", 79],
+    ["FWD", "Dado Pršo", 82],
+    ["FWD", "Iván Klasnić", 79]
+  ],
+  "2014": [
+    ["GK", "Danijel Subašić", 83],
+    ["DEF", "Darijo Srna", 84],
+    ["DEF", "Dejan Lovren", 84],
+    ["DEF", "Ivan Strinić", 80],
+    ["DEF", "Gordon Schildenfeld", 78],
+    ["MID", "Marcelo Brozović", 82],
+    ["MID", "Luka Modrić", 88],
+    ["MID", "Ivan Rakitić", 87],
+    ["MID", "Ivan Perišić", 84],
+    ["FWD", "Mario Mandžukić", 85],
+    ["FWD", "Ivica Olić", 80]
+  ],
+  "2018": [
+    ["GK", "Danijel Subašić", 84],
+    ["DEF", "Šime Vrsaljko", 81],
+    ["DEF", "Dejan Lovren", 83],
+    ["DEF", "Domagoj Vida", 82],
+    ["DEF", "Ivan Strinić", 79],
+    ["MID", "Marcelo Brozović", 84],
+    ["MID", "Luka Modrić", 93],
+    ["MID", "Ivan Rakitić", 87],
+    ["FWD", "Ante Rebić", 82],
+    ["FWD", "Mario Mandžukić", 86],
+    ["FWD", "Ivan Perišić", 86]
+  ],
+  "2022": [
+    ["GK", "Dominik Livaković", 84],
+    ["DEF", "Josip Juranović", 80],
+    ["DEF", "Dejan Lovren", 81],
+    ["DEF", "Joško Gvardiol", 86],
+    ["DEF", "Borna Sosa", 79],
+    ["MID", "Marcelo Brozović", 85],
+    ["MID", "Luka Modrić", 91],
+    ["MID", "Mateo Kovačić", 85],
+    ["FWD", "Andrej Kramarić", 84],
+    ["FWD", "Ivan Perišić", 85],
+    ["FWD", "Bruno Petković", 80]
+  ]
+}
