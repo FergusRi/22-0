@@ -3,6 +3,7 @@ import { DraftProgress } from "./components/draft/DraftProgress";
 import { DraftRound } from "./components/draft/DraftRound";
 import { FormationPitch } from "./components/draft/FormationPitch";
 import { RevealTicker, type RevealItem } from "./components/draft/RevealTicker";
+import { WorldCupFacts } from "./components/common/WorldCupFacts";
 import { FormationSelector } from "./components/formation/FormationSelector";
 import { NationStrengths } from "./components/formation/NationStrengths";
 import { getNationProfile } from "./lib/nations/nationProfile";
@@ -291,15 +292,18 @@ export default function App() {
             <h2 className="screen-title">Draw your nation</h2>
             <p className="reveal-subtitle">Who are you building for?</p>
             {!nation ? (
-              <RevealTicker
-                items={nationRevealItems}
-                pickTarget={() => getRandomNation(supportedNations)}
-                onComplete={handleNationResult}
-                buttonLabel="Draw nation"
-                runningLabel="Drawing…"
-                durationMs={1700}
-                completeDelayMs={280}
-              />
+              <>
+                <RevealTicker
+                  items={nationRevealItems}
+                  pickTarget={() => getRandomNation(supportedNations)}
+                  onComplete={handleNationResult}
+                  buttonLabel="Draw nation"
+                  runningLabel="Drawing…"
+                  durationMs={1700}
+                  completeDelayMs={280}
+                />
+                <WorldCupFacts />
+              </>
             ) : (
               <div
                 className="nation-reveal nation-reveal--result"
@@ -370,6 +374,7 @@ export default function App() {
                 completeDelayMs={380}
                 themeNation={nation}
               />
+              <WorldCupFacts />
             </div>
           </div>
         )}
