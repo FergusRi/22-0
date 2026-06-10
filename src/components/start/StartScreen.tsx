@@ -48,12 +48,15 @@ export function StartScreen({
   return (
     <div className="start-screen">
       <header className="start-hero">
-        <span className="start-hero__badge">
-          <span className="start-hero__trophy" aria-hidden="true">
-            🏆
+        <div className="start-hero__badges">
+          <span className="start-hero__badge">
+            <span className="start-hero__trophy" aria-hidden="true">
+              🏆
+            </span>
+            World Cup Gauntlet
           </span>
-          World Cup Gauntlet
-        </span>
+          <span className="start-hero__fan">Fan built</span>
+        </div>
         <h1 className="start-hero__hook">Can you become the champion of champions?</h1>
         <p className="start-hero__sub">
           Build a nation&apos;s all-time XI, then beat every World Cup winner in history —

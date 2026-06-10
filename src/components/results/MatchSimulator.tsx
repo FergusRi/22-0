@@ -1,9 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getNationTheme } from "../../data/nationThemes";
 import { GAUNTLET_TOTAL } from "../../data/worldCupChampions";
+import { GRAIL_RECORD } from "../../lib/gauntlet/gauntletRecord";
+import { squadMatchupPlayers, userMatchupPlayers } from "../../lib/gauntlet/matchupLineup";
 import { getPreMatchRead } from "../../lib/simulation/preMatchRead";
-import type { GauntletResult, MatchResult, Player } from "../../lib/types/game";
+import type { DraftPick, Formation, GauntletResult, MatchResult, Player } from "../../lib/types/game";
 import { ChampionMatchFrame } from "./ChampionMatchFrame";
+import { GauntletSimHud } from "./GauntletSimHud";
+import { MatchupTable, type MatchupSide } from "./MatchupTable";
 import { PreMatchRead } from "./PreMatchRead";
 
 type SimMatch = {
@@ -20,8 +24,21 @@ type SimMatch = {
 
 type MatchSimulatorProps = {
   gauntlet: GauntletResult;
+  nation: string;
+  formation: Formation;
+  picks: DraftPick[];
   onFinish: () => void;
 };
+
+function tallyThrough(sequence: SimMatch[], through: number, userId: string) {
+  let wins = 0;
+  let losses = 0;
+  for (let i = 0; i < through; i += 1) {
+    if (perspective(sequence[i].match, userId).won) wins += 1;
+    else losses += 1;
+  }
+  return { wins, losses };
+}
 
 function buildGauntletSequence(result: GauntletResult): SimMatch[] {
   return result.matches.map((gm) => ({
@@ -33,7 +50,7 @@ function buildGauntletSequence(result: GauntletResult): SimMatch[] {
     progress: `Champion ${gm.round} of ${GAUNTLET_TOTAL}`,
     match: gm.match,
     isKnockout: true,
-    isFinal: gm.round === GAUNTLET_TOTAL && result.completed,
+    isFinal: gm.round === GAUNTLET_TOTAL,
   }));
 }
 
@@ -54,20 +71,20 @@ type Outcome = {
   tone: "win" | "draw" | "loss" | "champ";
 };
 
-function outcomeFor(item: SimMatch, userId: string): Outcome {
+function outcomeFor(item: SimMatch, userId: string, grailHit: boolean): Outcome {
   const { userGoals, oppGoals, won } = perspective(item.match, userId);
 
   if (item.isKnockout) {
     if (won) {
-      if (item.isFinal) {
-        return {
-          text: `${GAUNTLET_TOTAL}-0 — Beat every World Cup winner`,
-          tone: "champ",
-        };
+      if (item.isFinal && grailHit) {
+        return { text: `${GRAIL_RECORD} — Grail!`, tone: "champ" };
       }
-      return { text: "On to the next champion", tone: "win" };
+      if (item.isFinal) {
+        return { text: "Final tie won", tone: "win" };
+      }
+      return { text: "Win — on to the next champion", tone: "win" };
     }
-    return { text: `Eliminated by ${item.stageLabel}`, tone: "loss" };
+    return { text: `Loss vs ${item.stageLabel}`, tone: "loss" };
   }
 
   if (userGoals > oppGoals) return { text: "Win", tone: "win" };
@@ -75,34 +92,13 @@ function outcomeFor(item: SimMatch, userId: string): Outcome {
   return { text: "Loss", tone: "loss" };
 }
 
-function championStars(squad: Player[]): Player[] {
-  return [...squad]
-    .filter((p) => p.position !== "GK")
-    .sort((a, b) => b.overall - a.overall)
-    .slice(0, 3);
-}
-
-function ChampionLegends({ squad, nation }: { squad: Player[]; nation: string }) {
-  const stars = championStars(squad);
-  if (stars.length === 0) return null;
-
-  return (
-    <div className="champion-legends">
-      <span className="champion-legends__label">
-        {getNationTheme(nation).flag} Legends to beat
-      </span>
-      <div className="champion-legends__names">
-        {stars.map((p) => (
-          <span key={p.id} className="champion-legends__name">
-            {p.name}
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-export function MatchSimulator({ gauntlet, onFinish }: MatchSimulatorProps) {
+export function MatchSimulator({
+  gauntlet,
+  nation,
+  formation,
+  picks,
+  onFinish,
+}: MatchSimulatorProps) {
   const sequence = useMemo(() => buildGauntletSequence(gauntlet), [gauntlet]);
   const userId = gauntlet.userTeamId;
 
@@ -123,8 +119,20 @@ export function MatchSimulator({ gauntlet, onFinish }: MatchSimulatorProps) {
   const isLast = step >= sequence.length - 1;
   const view = perspective(item.match, userId);
   const preMatch = getPreMatchRead(view.userTeam, view.opp, item.isKnockout);
-  const userTheme = getNationTheme(view.userTeam.nation);
-  const oppTheme = getNationTheme(view.opp.nation);
+  const record = tallyThrough(sequence, step, userId);
+  const matchup = {
+    user: {
+      nation,
+      ovr: view.userTeam.overall,
+      players: userMatchupPlayers(formation, picks),
+    },
+    opponent: {
+      nation: item.championNation,
+      subtitle: String(item.championYear),
+      ovr: view.opp.overall,
+      players: squadMatchupPlayers(item.championSquad),
+    },
+  };
 
   function handleNext() {
     if (isLast) {
@@ -137,11 +145,17 @@ export function MatchSimulator({ gauntlet, onFinish }: MatchSimulatorProps) {
 
   return (
     <div className="match-sim">
+      <GauntletSimHud
+        wins={record.wins}
+        losses={record.losses}
+        tieLabel={`Tie ${step + 1} of ${sequence.length} · ${item.stageLabel}`}
+      />
+
       <ol className="match-sim__timeline">
         {sequence.map((seqItem, i) => {
           const done = i < step;
           const seqView = perspective(seqItem.match, userId);
-          const seqOutcome = done ? outcomeFor(seqItem, userId) : null;
+          const seqOutcome = done ? outcomeFor(seqItem, userId, gauntlet.completed) : null;
           const pipTheme = getNationTheme(seqItem.championNation);
           return (
             <li
@@ -168,26 +182,7 @@ export function MatchSimulator({ gauntlet, onFinish }: MatchSimulatorProps) {
           progress={item.progress}
         >
           <div className="match-card match-card--preview">
-            <div className="match-card__teams">
-              <div className="match-card__team match-card__team--user">
-                <span className="match-card__flag" aria-hidden="true">
-                  {userTheme.flag}
-                </span>
-                <span className="match-card__nation">{view.userTeam.nation}</span>
-                <span className="match-card__ovr">OVR {view.userTeam.overall}</span>
-              </div>
-              <div className="match-card__score">
-                <span className="match-card__vs">vs</span>
-              </div>
-              <div className="match-card__team match-card__team--opp">
-                <span className="match-card__flag" aria-hidden="true">
-                  {oppTheme.flag}
-                </span>
-                <span className="match-card__nation">{view.opp.nation}</span>
-                <span className="match-card__ovr">OVR {view.opp.overall}</span>
-              </div>
-            </div>
-            <ChampionLegends squad={item.championSquad} nation={item.championNation} />
+            <MatchupTable user={matchup.user} opponent={matchup.opponent} />
             <PreMatchRead read={preMatch} />
             <button
               type="button"
@@ -209,13 +204,15 @@ export function MatchSimulator({ gauntlet, onFinish }: MatchSimulatorProps) {
             item={item}
             userId={userId}
             isLast={isLast}
+            grailHit={gauntlet.completed}
+            matchup={matchup}
             onNext={handleNext}
           />
         </ChampionMatchFrame>
       )}
 
       <button type="button" className="link-button" onClick={onFinish}>
-        Skip to results
+        Skip to end
       </button>
     </div>
   );
@@ -225,6 +222,8 @@ type LiveMatchProps = {
   item: SimMatch;
   userId: string;
   isLast: boolean;
+  grailHit: boolean;
+  matchup: { user: MatchupSide; opponent: MatchupSide };
   onNext: () => void;
 };
 
@@ -235,7 +234,7 @@ const MATCH_MS = { regular: 6200, extra: 8200 } as const;
 const PEN_KICK_MS = 1250;
 const PEN_START_MS = 900;
 
-function LiveMatch({ item, userId, isLast, onNext }: LiveMatchProps) {
+function LiveMatch({ item, userId, isLast, grailHit, matchup, onNext }: LiveMatchProps) {
   const { match } = item;
   const view = perspective(match, userId);
   const goals = match.goals;
@@ -365,10 +364,11 @@ function LiveMatch({ item, userId, isLast, onNext }: LiveMatchProps) {
   const latestGoal = shownGoals.length > 0 ? shownGoals[shownGoals.length - 1] : null;
   const latestPen = shownPens.length > 0 ? shownPens[shownPens.length - 1] : null;
 
-  const outcome = outcomeFor(item, userId);
+  const outcome = outcomeFor(item, userId, grailHit);
 
   return (
     <div className={`live-match live-match--${phase}`}>
+      <MatchupTable user={matchup.user} opponent={matchup.opponent} compact />
       {phase === "live" && latestGoal && flashKey > 0 ? (
         <div
           key={flashKey}

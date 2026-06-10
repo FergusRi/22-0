@@ -41,7 +41,7 @@ export function GauntletLaunch({
       </div>
 
       <p className="gauntlet-launch__hint">
-        Sim reveals each result one after another. Skip shows every result at once.
+        Sim plays each tie live with goals and scorers. Skip rolls results one by one.
       </p>
     </div>
   );

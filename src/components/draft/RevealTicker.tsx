@@ -27,8 +27,13 @@ type RevealTickerProps = {
 const ITEM_H = 76;
 const CENTER_OFFSET = ITEM_H;
 
-function easeOutCubic(t: number): number {
-  return 1 - (1 - t) ** 3;
+/** Single smooth ease-out — no late creep through extra items. */
+function easeSpin(t: number): number {
+  return 1 - (1 - t) ** 4;
+}
+
+function centeredIndex(offset: number): number {
+  return Math.round((offset + CENTER_OFFSET) / ITEM_H);
 }
 
 export function RevealTicker({
@@ -37,14 +42,19 @@ export function RevealTicker({
   onComplete,
   buttonLabel = "Reveal",
   runningLabel = "Revealing…",
-  durationMs = 2900,
+  durationMs = 1850,
   completeDelayMs = 0,
   themeNation,
 }: RevealTickerProps) {
   const [phase, setPhase] = useState<"idle" | "running" | "done">("idle");
   const [offset, setOffset] = useState(0);
+  const [tickPulse, setTickPulse] = useState(0);
   const rafRef = useRef<number | undefined>(undefined);
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const lastTickIndex = useRef(0);
+  const landIndexRef = useRef(0);
+  const targetOffsetRef = useRef(0);
+  const targetIdRef = useRef("");
 
   useEffect(() => {
     return () => {
@@ -56,7 +66,7 @@ export function RevealTicker({
   const strip = useMemo(() => {
     if (items.length === 0) return [];
     const expanded: RevealItem[] = [];
-    for (let r = 0; r < 14; r += 1) {
+    for (let r = 0; r < 10; r += 1) {
       expanded.push(...items);
     }
     return expanded;
@@ -72,7 +82,7 @@ export function RevealTicker({
       )
       .filter((index) => index >= 0);
 
-    const minScroll = items.length * 5;
+    const minScroll = items.length * 4;
     const candidates = landIndices.filter((index) => index >= minScroll);
     const landIndex =
       candidates[candidates.length - 1] ??
@@ -80,36 +90,92 @@ export function RevealTicker({
       0;
 
     const targetOffset = landIndex * ITEM_H - CENTER_OFFSET;
-    const startOffset = 0;
     const startTime = performance.now();
+    lastTickIndex.current = 0;
+    landIndexRef.current = landIndex;
+    targetOffsetRef.current = targetOffset;
+    targetIdRef.current = targetId;
 
     setPhase("running");
+    setTickPulse(0);
+
+    function finish() {
+      setOffset(targetOffsetRef.current);
+      rafRef.current = requestAnimationFrame(() => {
+        setPhase("done");
+        timerRef.current = setTimeout(
+          () => onComplete(targetIdRef.current),
+          completeDelayMs,
+        );
+      });
+    }
 
     function frame(now: number) {
       const t = Math.min(1, (now - startTime) / durationMs);
-      setOffset(startOffset + (targetOffset - startOffset) * easeOutCubic(t));
+      const eased = easeSpin(t);
+      const nextOffset = targetOffsetRef.current * eased;
+      setOffset(nextOffset);
 
-      if (t < 1) {
-        rafRef.current = requestAnimationFrame(frame);
-      } else {
-        setPhase("done");
-        timerRef.current = setTimeout(() => onComplete(targetId), completeDelayMs);
+      const tickIndex = centeredIndex(nextOffset);
+      if (tickIndex !== lastTickIndex.current) {
+        lastTickIndex.current = tickIndex;
+        setTickPulse((n) => n + 1);
       }
+
+      if (t >= 1) {
+        finish();
+        return;
+      }
+
+      rafRef.current = requestAnimationFrame(frame);
     }
 
     rafRef.current = requestAnimationFrame(frame);
   }
 
+  const canStart = phase === "idle";
+  const landIndex = landIndexRef.current;
+  const highlightIndex =
+    phase === "done"
+      ? landIndex
+      : phase === "running"
+        ? centeredIndex(offset)
+        : -1;
+
   return (
     <div
-      className={`reveal ${themeNation ? "reveal--themed" : ""}`}
+      className={[
+        "reveal",
+        themeNation ? "reveal--themed" : "",
+        phase === "running" ? "reveal--running" : "",
+        phase === "done" ? "reveal--landed" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
       style={themeNation ? themeStyle(themeNation) : undefined}
     >
-      <div className="reveal__viewport">
-        <div className="reveal__highlight" aria-hidden="true" />
+      <button
+        type="button"
+        className="reveal__viewport"
+        onClick={canStart ? start : undefined}
+        disabled={!canStart}
+        aria-label={canStart ? buttonLabel : undefined}
+      >
+        <span className="reveal__pointer reveal__pointer--left" aria-hidden="true" />
+        <span className="reveal__pointer reveal__pointer--right" aria-hidden="true" />
         <div
-          className={`reveal__strip ${phase === "running" ? "reveal__strip--running" : ""}`}
-          style={{ transform: `translateY(-${offset}px)` }}
+          key={phase === "running" ? tickPulse : "landed"}
+          className={[
+            "reveal__highlight",
+            phase === "running" && tickPulse > 0 ? "reveal__highlight--pulse" : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+          aria-hidden="true"
+        />
+        <div
+          className="reveal__strip"
+          style={{ transform: `translate3d(0, -${offset}px, 0)` }}
         >
           {strip.map((item, index) => (
             <div
@@ -117,6 +183,12 @@ export function RevealTicker({
               className={[
                 "reveal__item",
                 item.muted ? "reveal__item--muted" : "",
+                index === highlightIndex && phase !== "idle"
+                  ? "reveal__item--active"
+                  : "",
+                index === highlightIndex && phase === "done"
+                  ? "reveal__item--winner"
+                  : "",
               ]
                 .filter(Boolean)
                 .join(" ")}
@@ -133,9 +205,13 @@ export function RevealTicker({
             </div>
           ))}
         </div>
-      </div>
+      </button>
 
-      {phase !== "done" ? (
+      {phase === "done" ? (
+        <p className="reveal__locked" aria-live="polite">
+          Locked in
+        </p>
+      ) : (
         <button
           type="button"
           className="btn btn--start reveal__button"
@@ -144,7 +220,7 @@ export function RevealTicker({
         >
           {phase === "running" ? runningLabel : buttonLabel}
         </button>
-      ) : null}
+      )}
     </div>
   );
 }

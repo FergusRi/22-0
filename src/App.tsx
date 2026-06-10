@@ -11,6 +11,7 @@ import { GauntletBriefing } from "./components/results/GauntletBriefing";
 import { GauntletLaunch } from "./components/results/GauntletLaunch";
 import { GauntletResults } from "./components/results/GauntletResults";
 import { GauntletRunViewer } from "./components/results/GauntletRunViewer";
+import { MatchSimulator } from "./components/results/MatchSimulator";
 import { TeamRatings } from "./components/results/TeamRatings";
 import { projectGauntletRun } from "./lib/gauntlet/gauntletProjection";
 import { GauntletShareCard } from "./components/share/GauntletShareCard";
@@ -93,7 +94,7 @@ export default function App() {
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [ratings, setRatings] = useState<TeamRatingsType | null>(null);
   const [gauntletResult, setGauntletResult] = useState<GauntletResult | null>(null);
-  const [simPhase, setSimPhase] = useState<"choose" | "watch" | "results">("choose");
+  const [simPhase, setSimPhase] = useState<"choose" | "live" | "skip" | "results">("choose");
 
   const pickedPersonKeys = useMemo(
     () => new Set(draftPicks.map((pick) => personKey(pick.player))),
@@ -296,7 +297,8 @@ export default function App() {
                 onComplete={handleNationResult}
                 buttonLabel="Draw nation"
                 runningLabel="Drawing…"
-                completeDelayMs={400}
+                durationMs={1700}
+                completeDelayMs={280}
               />
             ) : (
               <div
@@ -364,7 +366,8 @@ export default function App() {
                 onComplete={handleTeamResult}
                 buttonLabel="Reveal squad"
                 runningLabel="Revealing…"
-                completeDelayMs={650}
+                durationMs={1800}
+                completeDelayMs={380}
                 themeNation={nation}
               />
             </div>
@@ -441,21 +444,47 @@ export default function App() {
             <GauntletLaunch
               nation={nation}
               projection={gauntletProjection}
-              onSim={() => setSimPhase("watch")}
-              onSkip={() => setSimPhase("results")}
+              onSim={() => setSimPhase("live")}
+              onSkip={() => setSimPhase("skip")}
             />
           </div>
         )}
 
-        {step === "simulation" && gauntletResult && simPhase === "watch" && (
-          <div className="simulation-screen">
-            <h2 className="screen-title">Vs all past winners</h2>
-            <GauntletRunViewer
-              result={gauntletResult}
-              onFinish={() => setSimPhase("results")}
-            />
-          </div>
-        )}
+        {step === "simulation" &&
+          gauntletResult &&
+          simPhase === "live" &&
+          nation &&
+          selectedFormation && (
+            <div className="simulation-screen">
+              <h2 className="screen-title">Live gauntlet</h2>
+              <MatchSimulator
+                gauntlet={gauntletResult}
+                nation={nation}
+                formation={selectedFormation}
+                picks={draftPicks}
+                onFinish={() => setSimPhase("results")}
+              />
+            </div>
+          )}
+
+        {step === "simulation" &&
+          gauntletResult &&
+          simPhase === "skip" &&
+          nation &&
+          selectedFormation &&
+          ratings && (
+            <div className="simulation-screen">
+              <h2 className="screen-title">Gauntlet results</h2>
+              <GauntletRunViewer
+                result={gauntletResult}
+                nation={nation}
+                formation={selectedFormation}
+                picks={draftPicks}
+                ratingsOvr={ratings.overall}
+                onFinish={() => setSimPhase("results")}
+              />
+            </div>
+          )}
 
         {step === "simulation" && gauntletResult && simPhase === "results" && (
           <div className="simulation-screen">

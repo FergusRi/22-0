@@ -25,7 +25,7 @@ locally and deploys as a static site to GitHub Pages.
 
 ```bash
 npm install        # install dependencies
-npm run dev        # start local dev server (http://localhost:5173/world-cup-draft/)
+npm run dev        # start local dev server (http://localhost:5173/22-0/)
 npm run build      # type-check + production build to dist/
 npm run preview    # preview the production build
 npm run deploy     # build + publish dist/ to GitHub Pages via gh-pages
@@ -62,8 +62,7 @@ Alternatively, run `npm run deploy` locally (uses the `gh-pages` branch).
 
 Notes:
 
-- `vite.config.ts` sets `base: "/world-cup-draft/"` for project-page hosting.
-  Change this if you rename the repository.
+- `vite.config.ts` sets `base: "/22-0/"` for project-page hosting.
 - Update the `homepage` field in `package.json` with your GitHub username.
 
 ## Data

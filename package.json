@@ -1,9 +1,9 @@
 {
-  "name": "world-cup-draft",
+  "name": "22-0",
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "homepage": "https://FergusRi.github.io/world-cup-draft",
+  "homepage": "https://FergusRi.github.io/22-0",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

@@ -8,7 +8,7 @@ import { isGrailRecord, matchOutcome } from "./gauntletRecord";
 
 /**
  * Runs the full champion gauntlet: one tie vs every World Cup winner in
- * chronological order. All 22 are played — record is W-0-L (knockout, no draws).
+ * chronological order. All 22 are played — record is W-L (knockout, no draws).
  */
 export function runGauntlet(
   userTeam: TournamentTeam,

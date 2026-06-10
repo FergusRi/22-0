@@ -118,7 +118,7 @@ export type GauntletResult = {
   matches: GauntletMatch[];
   wins: number;
   losses: number;
-  /** True when the run hits 22-0-0. */
+  /** True when the run hits 22-0. */
   completed: boolean;
   userTeamId: string;
   userNation: string;
