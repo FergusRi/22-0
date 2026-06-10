@@ -437,6 +437,34 @@ body {
   text-transform: uppercase;
 }
 
+.start-disclaimer {
+  margin-top: 8px;
+  padding: 16px 18px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.02);
+  text-align: center;
+}
+
+.start-disclaimer__lead {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.start-disclaimer__text {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--text-dim);
+  opacity: 0.8;
+  max-width: 48ch;
+  margin-inline: auto;
+}
+
 .gauntlet-brief {
   margin: 0 0 16px;
   text-align: center;

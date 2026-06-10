@@ -55,7 +55,7 @@ export function StartScreen({
             </span>
             World Cup Gauntlet
           </span>
-          <span className="start-hero__fan">Fan built</span>
+          <span className="start-hero__fan">Unofficial · Fan-made · Free</span>
         </div>
         <h1 className="start-hero__hook">Can you become the champion of champions?</h1>
         <p className="start-hero__sub">
@@ -156,6 +156,19 @@ export function StartScreen({
         <span className="start-cta__main">Draw your nation</span>
         <span className="start-cta__sub">The gauntlet awaits</span>
       </button>
+
+      <footer className="start-disclaimer">
+        <p className="start-disclaimer__lead">
+          An unofficial, fan-made, free-to-play game.
+        </p>
+        <p className="start-disclaimer__text">
+          Not affiliated with, endorsed by, or sponsored by FIFA, any football
+          federation, or any team or player featured. &ldquo;World Cup&rdquo; and
+          related marks belong to their respective owners. Player names are used
+          for historical reference only, and all ratings are subjective and
+          unofficial. Made by a fan, for fun.
+        </p>
+      </footer>
     </div>
   );
 }
