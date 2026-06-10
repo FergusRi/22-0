@@ -2559,6 +2559,14 @@ body {
   opacity: 0.35;
 }
 
+.reveal__done {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
 .reveal__button {
   width: 100%;
   transition: transform 0.12s ease;

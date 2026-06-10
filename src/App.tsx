@@ -300,7 +300,7 @@ export default function App() {
                   buttonLabel="Draw nation"
                   runningLabel="Drawing…"
                   durationMs={1700}
-                  completeDelayMs={280}
+                  continueLabel="Continue"
                 />
                 <WorldCupFacts />
               </>
@@ -371,10 +371,10 @@ export default function App() {
                 buttonLabel="Reveal squad"
                 runningLabel="Revealing…"
                 durationMs={1800}
-                completeDelayMs={380}
                 themeNation={nation}
+                continueLabel="Continue"
               />
-              <WorldCupFacts />
+              <WorldCupFacts key={`facts-${currentRound}`} nation={nation} />
             </div>
           </div>
         )}

@@ -20,6 +20,11 @@ type RevealTickerProps = {
   durationMs?: number;
   /** Pause on the result before firing onComplete. */
   completeDelayMs?: number;
+  /**
+   * When set, the ticker waits on the result and shows this button instead of
+   * auto-advancing — giving the player time to read before continuing.
+   */
+  continueLabel?: string;
   /** Applies nation-themed colours to the ticker frame. */
   themeNation?: string;
 };
@@ -44,6 +49,7 @@ export function RevealTicker({
   runningLabel = "Revealing…",
   durationMs = 1850,
   completeDelayMs = 0,
+  continueLabel,
   themeNation,
 }: RevealTickerProps) {
   const [phase, setPhase] = useState<"idle" | "running" | "done">("idle");
@@ -103,6 +109,7 @@ export function RevealTicker({
       setOffset(targetOffsetRef.current);
       rafRef.current = requestAnimationFrame(() => {
         setPhase("done");
+        if (continueLabel) return;
         timerRef.current = setTimeout(
           () => onComplete(targetIdRef.current),
           completeDelayMs,
@@ -131,6 +138,11 @@ export function RevealTicker({
     }
 
     rafRef.current = requestAnimationFrame(frame);
+  }
+
+  function handleContinue() {
+    if (phase !== "done") return;
+    onComplete(targetIdRef.current);
   }
 
   const canStart = phase === "idle";
@@ -208,9 +220,24 @@ export function RevealTicker({
       </button>
 
       {phase === "done" ? (
-        <p className="reveal__locked" aria-live="polite">
-          Locked in
-        </p>
+        continueLabel ? (
+          <div className="reveal__done">
+            <p className="reveal__locked" aria-live="polite">
+              Locked in
+            </p>
+            <button
+              type="button"
+              className="btn btn--start reveal__button"
+              onClick={handleContinue}
+            >
+              {continueLabel}
+            </button>
+          </div>
+        ) : (
+          <p className="reveal__locked" aria-live="polite">
+            Locked in
+          </p>
+        )
       ) : (
         <button
           type="button"
